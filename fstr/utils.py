@@ -1,4 +1,4 @@
-def split_format_language(string):
+def split_format_language(string, full_template):
     depths = {"{}": 0, "[]": 0, "()": 0}
 
     quotations = {"'": False, '"': False}
@@ -25,7 +25,9 @@ def split_format_language(string):
     formatting = string[index:].rstrip()
 
     if "{" in formatting.split(":")[0]:
-        raise SyntaxError("fstr may only be in the format specification.")
+        offset = full_template.rindex("!")
+        message = "fstr not allowed in conversion specifier."
+        raise_syntax_error(string, message, offset)
 
     return expression, formatting
 
@@ -83,6 +85,12 @@ def expr_starts_and_stops(string):
         index += 1
 
     if brace_depth:
-        raise SyntaxError("Mismatched braces in f-string %r." % string)
+        offset = len(string) + 1
+        raise_syntax_error(string, "Mismatched braces in f-string.", offset)
 
     return list(zip(expression_starts, expression_stops))
+
+
+def raise_syntax_error(template, message, offset=1):
+    info = ("fstr", 1, offset, template)
+    raise SyntaxError(message, info)
