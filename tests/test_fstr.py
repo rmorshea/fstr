@@ -1,7 +1,7 @@
 import pytest
 from sys import version_info
 
-from fstr import fstr
+import fstr
 
 
 def test_basic():
