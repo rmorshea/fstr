@@ -4,18 +4,20 @@ language: python
 
 cache: pip
 install:
-  - pip install pytest
+  - pip install pytest flake8
   - pip install -e .
 env:
+  - EXTRA_INSTALL=""
   - TEST_CMD="pytest"
 
-script: $TEST_CMD
+script: $EXTRA_INSTALL && $TEST_CMD
 
 matrix:
   include:
     - name: "black"
       python: 3.7
       env:
+        - EXTRA_INSTALL="pip install black"
         - TEST_CMD="black --check --verbose ."
     - name: "flake8"
       python: 3.7
