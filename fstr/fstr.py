@@ -2,7 +2,7 @@ import six
 import sys
 import inspect
 
-from .utils import split_format_language, expr_starts_and_stops
+from .utils import split_format_language, expr_starts_and_stops, raise_syntax_error
 
 
 class fstr(str):
@@ -90,8 +90,10 @@ class fstr(str):
             expressions = []
             template_fstrs = []
             template_parts = [outside[0]]
+
+            index = len(outside[0])  # only used for syntax error info
             for inner, outer in zip(inside, outside[1:]):
-                expr, format_lang = split_format_language(inner)
+                expr, format_lang = split_format_language(inner, self)
                 template_parts[-1]
                 if "{" in format_lang:
                     # there's an fstring inside the format language
@@ -99,7 +101,12 @@ class fstr(str):
                     template_parts.append(outer)
                 else:
                     template_parts.append("{" + format_lang + "}" + outer)
+                expr = expr.strip()
+                if not expr:
+                    msg = "Empty expresion not allowed."
+                    raise_syntax_error(self, msg, index + 1)
                 expressions.append(expr.strip().replace("\n", ""))
+                index += len(inner) + len(outer)
 
             template_parts = [
                 "".join(template_parts[i : i + 2])
@@ -131,7 +138,7 @@ class fstr(str):
             try:
                 return template.format(*values)
             except ValueError as e:
-                raise SyntaxError(str(e))
+                raise_syntax_error(self, str(e), None)
 
         def __repr__(self):
             if self.__context:

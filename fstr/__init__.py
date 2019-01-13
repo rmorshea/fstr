@@ -1,4 +1,4 @@
-__version__ = "0.1.0-alpha1"  # evaluated in setup.py
+__version__ = "0.1.0-alpha2"  # evaluated in setup.py
 
 import sys
 from .fstr import fstr
