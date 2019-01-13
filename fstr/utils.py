@@ -37,14 +37,21 @@ def expr_starts_and_stops(string):
     expression_stops = []
     in_single_quote = False
     in_double_quote = False
+    in_triple_quote = False
 
     while index < len(string):
         char = string[index]
         if brace_depth > 0:
             if char == "'" and not in_double_quote:
-                in_single_quote = not in_single_quote
-            if char == '"' and not in_single_quote:
-                in_double_quote = not in_double_quote
+                if string[index + 1 : index + 3] == "''":
+                    in_triple_quote = not in_triple_quote
+                elif not in_triple_quote:
+                    in_single_quote = not in_single_quote
+            elif char == '"' and not in_single_quote:
+                if string[index + 1 : index + 3] == '""':
+                    in_triple_quote = not in_triple_quote
+                elif not in_triple_quote:
+                    in_double_quote = not in_double_quote
         if char == "{":
             if brace_depth > 0:
                 if not (in_double_quote or in_single_quote):

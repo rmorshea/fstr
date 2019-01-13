@@ -341,167 +341,124 @@ def test_lambda(template, expected):
     assert fstr(template).format(x=5) == expected
 
 
-# def test_yield(self):
-#     # Not terribly useful, but make sure the yield turns
-#     #  a function into a generator
-#     def fn(y):
-#         fstr("y:{yield y*2}")
-#
-#     g = fn(4)
-#     self.assertEqual(next(g), 8)
-#
-# def test_yield_send(self):
-#     def fn(x):
-#         yield fstr("x:{yield (lambda i: x * i)}")
-#
-#     g = fn(10)
-#     the_lambda = next(g)
-#     self.assertEqual(the_lambda(4), 40)
-#     self.assertEqual(g.send("string"), "x:string")
-#
-# def test_expressions_with_triple_quoted_strings(self):
-#     self.assertEqual(f"{'''x'''}", 'x')
-#     self.assertEqual(f"{'''eric's'''}", "eric's")
-#
-#     # Test concatenation within an expression
-#     self.assertEqual(fstr("{"x" """eric"s""" "y"}', 'xeric"sy"))
-#     self.assertEqual(fstr("{"x" """eric"s"""}', 'xeric"s"))
-#     self.assertEqual(fstr("{"""eric"s""" "y"}', 'eric"sy"))
-#     self.assertEqual(fstr("{"""x""" """eric"s""" "y"}', 'xeric"sy"))
-#     self.assertEqual(fstr("{"""x""" """eric"s""" """y"""}', 'xeric"sy"))
-#     self.assertEqual(fstr("{r"""x""" """eric"s""" """y"""}', 'xeric"sy"))
+_triple_quoted_strings = [
+    ("{'''x'''}", "x"),
+    ("{'''eric's'''}", "eric's"),
+    ('{"x" """eric"s""" "y"}', 'xeric"sy'),
+    ('{"x" """eric"s"""}', 'xeric"s'),
+    ('{"""eric"s""" "y"}', 'eric"sy'),
+    ('{"""x""" """eric"s""" "y"}', 'xeric"sy'),
+    ('{"""x""" """eric"s""" """y"""}', 'xeric"sy'),
+    ('{r"""x""" """eric"s""" """y"""}', 'xeric"sy'),
+]
 
-#
-# def test_closure(self):
-#     def outer(x):
-#         def inner():
-#             return fstr("x:{x}")
-#         return inner
-#
-#     self.assertEqual(outer('987')(), 'x:987')
-#     self.assertEqual(outer(7)(), 'x:7')
-#
-# def test_arguments(self):
-#     y = 2
-#     def f(x, width):
-#         return fstr("x={x*y:{width}}")
-#
-#     self.assertEqual(f('foo', 10), 'x=foofoo    ')
-#     x = 'bar'
-#     self.assertEqual(f(10, 10), 'x=        20')
-#
 
-# def test_missing_variable(self):
-#     with self.assertRaises(NameError):
-#         fstr("v:{value}")
-#
-# def test_missing_format_spec(self):
-#     class O:
-#         def __format__(self, spec):
-#             if not spec:
-#                 return '*'
-#             return spec
-#
-#     self.assertEqual(fstr("{O():x}', 'x"))
-#     self.assertEqual(fstr("{O()}', '*"))
-#     self.assertEqual(fstr("{O():}', '*"))
-#
-#     self.assertEqual(fstr("{3:}', '3"))
-#     self.assertEqual(fstr("{3!s:}', '3"))
-#
+@pytest.mark.parametrize("template, expected", _triple_quoted_strings)
+def test_expressions_with_triple_quoted_strings(template, expected):
+    assert fstr(template).format() == expected
 
-# def test_call(self):
-#     def foo(x):
-#         return 'x=' + str(x)
-#
-#     self.assertEqual(fstr("{foo(10)}', 'x=10"))
 
-#
-# def test_leading_trailing_spaces(self):
-#     self.assertEqual(fstr("{ 3}', '3"))
-#     self.assertEqual(fstr("{  3}', '3"))
-#     self.assertEqual(fstr("{3 }', '3"))
-#     self.assertEqual(fstr("{3  }', '3"))
-#
-#     self.assertEqual(fstr("expr={ {x: y for x, y in [(1, 2), ]}}"),
-#                      'expr={1: 2}')
-#     self.assertEqual(fstr("expr={ {x: y for x, y in [(1, 2), ]} }"),
-#                      'expr={1: 2}')
-#
-# def test_not_equal(self):
-#     # There's a special test for this because there's a special
-#     #  case in the f-string parser to look for != as not ending an
-#     #  expression. Normally it would, while looking for !s or !r.
-#
-#     self.assertEqual(fstr("{3!=4}', 'True"))
-#     self.assertEqual(fstr("{3!=4:}', 'True"))
-#     self.assertEqual(fstr("{3!=4!s}', 'True"))
-#     self.assertEqual(fstr("{3!=4!s:.3}', 'Tru"))
-#
-# def test_conversions(self):
-#     self.assertEqual(fstr("{3.14:10.10}', '      3.14"))
-#     self.assertEqual(fstr("{3.14!s:10.10}', '3.14      "))
-#     self.assertEqual(fstr("{3.14!r:10.10}', '3.14      "))
-#     self.assertEqual(fstr("{3.14!a:10.10}', '3.14      "))
-#
-#     self.assertEqual(fstr("{"a"}', 'a"))
-#     self.assertEqual(fstr("{"a"!r}', "'a")")
-#     self.assertEqual(fstr("{"a"!a}', "'a")")
-#
-#     # Not a conversion.
-#     self.assertEqual(fstr("{"a!r"}"), "a!r")
-#
-#     # Not a conversion, but show that ! is allowed in a format spec.
-#     self.assertEqual(fstr("{3.14:!<10.10}', '3.14!!!!!!"))
-#
-#     self.assertAllRaise(SyntaxError, 'f-string: invalid conversion character',
-#                         ["fstr("{3!g}")",
-#                          "fstr("{3!A}")",
-#                          "fstr("{3!3}")",
-#                          "fstr("{3!G}")",
-#                          "fstr("{3!!}")",
-#                          "fstr("{3!:}")",
-#                          "fstr("{3! s}")",  # no space before conversion char
-#                          ])
-#
-#     self.assertAllRaise(SyntaxError, "f-string: expecting '}'",
-#                         ["fstr("{x!s{y}}")",
-#                          "fstr("{3!ss}")",
-#                          "fstr("{3!ss:}")",
-#                          "fstr("{3!ss:s}")",
-#                          ])
-#
-# def test_assignment(self):
-#     self.assertAllRaise(SyntaxError, 'invalid syntax',
-#                         ["fstr("") = 3",
-#                          "fstr("{0}") = x",
-#                          "fstr("{x}") = x",
-#                          ])
-#
-# def test_del(self):
-#     self.assertAllRaise(SyntaxError, 'invalid syntax',
-#                         ["del fstr("")",
-#                          "del '' fstr("")",
-#                          ])
+def test_missing_variable():
+    with pytest.raises(NameError):
+        fstr("v:{value}").format()
 
-#
-# def test_invalid_expressions(self):
-#     self.assertAllRaise(SyntaxError,
-#                         r"closing parenthesis '\)' does not match "
-#                         r"opening parenthesis '\[' \(<fstring>, line 1\)",
-#                         [r"fstr("{a[4)}")"])
-#     self.assertAllRaise(SyntaxError,
-#                         r"closing parenthesis '\]' does not match "
-#                         r"opening parenthesis '\(' \(<fstring>, line 1\)",
-#                         [r"fstr("{a(4]}")"])
-#
-# def test_errors(self):
-#     # see issue 26287
-#     self.assertAllRaise(TypeError, 'unsupported',
-#                         [r"fstr("{(lambda: 0):x}")",
-#                          r"fstr("{(0,):x}")",
-#                          ])
-#     self.assertAllRaise(ValueError, 'Unknown format code',
-#                         [r"fstr("{1000:j}")",
-#                          r"fstr("{1000:j}")",
-#                         ])
+
+def test_missing_format_spec():
+    class Obj:
+        def __format__(self, spec):
+            if not spec:
+                return "*"
+            return spec
+
+    assert fstr("{Obj():x}").format(Obj=Obj) == "x"
+    assert fstr("{Obj()}").format(Obj=Obj) == "*"
+    assert fstr("{Obj():}").format(Obj=Obj) == "*"
+
+    assert fstr("{3:}").format() == "3"
+    assert fstr("{3!s:}").format() == "3"
+
+
+def test_call():
+    def foo(x):
+        return "x=" + str(x)
+
+    assert fstr("{foo(10)}").format(foo=foo) == "x=10"
+
+
+def test_leading_trailing_spaces():
+    assert fstr("{ 3}").format() == "3"
+    assert fstr("{  3}").format() == "3"
+    assert fstr("{3 }").format() == "3"
+    assert fstr("{3  }").format() == "3"
+
+    assert fstr("expr={ {x: y for x, y in [(1, 2), ]} }").format() == "expr={1: 2}"
+    assert fstr("expr={ {x: y for x, y in [(1, 2), ]}}").format() == "expr={1: 2}"
+
+
+def test_not_equal():
+    # There's a special test for this because there's a special
+    # case in the f-string parser to look for != as not ending an
+    # expression. Normally it would, while looking for !s or !r.
+
+    assert fstr("{3!=4}").format() == "True"
+    assert fstr("{3!=4:}").format() == "True"
+    assert fstr("{3!=4!s}").format() == "True"
+    assert fstr("{3!=4!s:.3}").format() == "Tru"
+
+
+def test_conversions():
+    assert fstr("{3.14:10.10}").format() == "      3.14"
+    assert fstr("{3.14!s:10.10}").format() == "3.14      "
+    assert fstr("{3.14!r:10.10}").format() == "3.14      "
+    assert fstr("{3.14!a:10.10}").format() == "3.14      "
+
+    assert fstr('{"a"}').format() == "a"
+    assert fstr('{"a"!r}').format() == "'a'"
+    assert fstr('{"a"!a}').format() == "'a'"
+
+    # Not a conversion.
+    assert fstr('{"a!r"}').format() == "a!r"
+
+    # Not a conversion, but show that ! is allowed in a format spec.
+    assert fstr("{3.14:!<10.10}").format() == "3.14!!!!!!"
+
+    bad_conversions = [
+        "{3!g}"
+        "{3!A}"
+        "{3!3}"
+        "{3!G}"
+        "{3!!}"
+        "{3!:}"
+        "{3! s}"  # no space before conversion char
+        "{x!s{y}}",
+        "{3!ss}",
+        "{3!ss:}",
+        "{3!ss:s}",
+    ]
+
+    for bad in bad_conversions:
+        with pytest.raises(SyntaxError):
+            fstr(bad).format()
+
+
+_invalid_expressions = ["{a[4)}", "{a(4]}"]
+
+
+@pytest.mark.parametrize("invalid", _invalid_expressions)
+def test_invalid_expressions(invalid):
+    with pytest.raises(SyntaxError):
+        fstr(invalid).format()
+
+
+_causes_errors = [
+    ("{(lambda: 0):x}", TypeError),
+    ("{(0,):x}", TypeError),
+    ("{1000:j}", SyntaxError),
+    ("{1000:j}", SyntaxError),
+]
+
+
+@pytest.mark.parametrize("bad, etype", _causes_errors)
+def test_errors(bad, etype):
+    with pytest.raises(etype):
+        fstr(bad).format()
