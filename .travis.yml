@@ -4,6 +4,7 @@ language: python
 cache: pip
 install:
   - pytest
+  - pip install -e .
 env:
   - TEST_CMD="pytest"
 
