@@ -1,5 +1,6 @@
 __version__ = "0.1.0-alpha1"  # evaluated in setup.py
 
+import six
 import sys
 import inspect
 
@@ -129,7 +130,7 @@ class fstr(str):
                     result = eval(c, dict(self.__context, **context))
                 except Exception as e:
                     msg = "Could not evaluate %r." % self.__expressions[i]
-                    raise type(e)(msg) from e
+                    raise six.raise_from(type(e)(msg), e)
                 else:
                     values.append(result)
             try:

@@ -43,6 +43,9 @@ with open(os.path.join(root, "__init__.py")) as f:
         print("No version found in %s/__init__.py" % root)
         sys.exit(1)
 
+
+package["install_requires"] = ["six==1.11.0"]
+
 # -----------------------------------------------------------------------------
 # Library Description
 # -----------------------------------------------------------------------------
