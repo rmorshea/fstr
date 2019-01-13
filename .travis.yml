@@ -1,1 +1,29 @@
+sudo: false
 language: python
+
+cache: pip
+install:
+  - pytest
+env:
+  - TEST_CMD="pytest"
+
+script: $TEST_CMD
+
+matrix:
+  include:
+    - name: "black"
+      python: 3.7
+      env:
+        - TEST_CMD="black --check --verbose ."
+    - name: "flake8"
+      python: 3.7
+      install:
+        - flake8
+      env:
+        - TEST_CMD="flake8"
+    - name: "python-3.6"
+      python: 3.6
+    - name: "python-3.7"
+      python: 3.7
+    - name: "python-3.8-dev"
+      python: 3.8-dev
