@@ -33,7 +33,7 @@ class fstr(str):
     """
 
     def __new__(cls, *args, **context):
-        return super().__new__(cls, *args)
+        return super(fstr, cls).__new__(cls, *args)
 
     def evaluate(self):
         frame = inspect.currentframe().f_back
