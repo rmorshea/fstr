@@ -1,1 +1,33 @@
+sudo: false
+dist: xenial
 language: python
+
+cache: pip
+install:
+  - pip install pytest
+  - pip install -e .
+env:
+  - TEST_CMD="pytest"
+
+script: eval $TEST_CMD
+
+matrix:
+  include:
+    - name: "black"
+      python: 3.7
+      env:
+        - TEST_CMD="pip install black && black --verbose ."
+    - name: "flake8"
+      python: 3.7
+      env:
+        - TEST_CMD="pip install flake8 && flake8"
+    - name: "python-2.7"
+      python: 2.7
+    - name: "python-3.5"
+      python: 3.5
+    - name: "python-3.6"
+      python: 3.6
+    - name: "python-3.7"
+      python: 3.7
+    - name: "python-3.8-dev"
+      python: 3.8-dev
