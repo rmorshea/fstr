@@ -4,7 +4,8 @@ language: python
 
 cache: pip
 install:
-  - pip install pytest flake8
+  - pip install pytest
+  - pip install flake8
   - pip install -e .
 env:
   - TEST_CMD="pytest"
