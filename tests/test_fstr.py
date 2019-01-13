@@ -462,6 +462,12 @@ def test_invalid_expressions(invalid):
 
 if version_info < (3, 0):
     _causes_errors = [("{1000:j}", SyntaxError)]
+elif version_info < (3, 6):
+    _causes_errors = [
+        ("{(lambda: 0):x}", TypeError),
+        ("{(0,):x}", TypeError),
+        ("{1000:j}", SyntaxError),
+    ]
 else:
     _causes_errors = [
         ("{(lambda: 0):x}", TypeError),
