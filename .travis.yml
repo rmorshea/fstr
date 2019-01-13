@@ -9,7 +9,7 @@ install:
 env:
   - TEST_CMD="pytest"
 
-script: eval $(TEST_CMD)
+script: eval $TEST_CMD
 
 matrix:
   include:
