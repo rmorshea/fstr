@@ -40,7 +40,7 @@ class fstr(str):
         parameters = dict(frame.f_globals, **frame.f_locals)
         return self.format(**parameters)
 
-    if sys.version_info < (3, 6):  # noqa: C901
+    if sys.version_info >= (3, 6):  # noqa: C901
 
         def __init__(self, template, **context):
             self.__context = context
@@ -144,6 +144,3 @@ class fstr(str):
                 return "%s(%r, %s)" % ("fstr", str(self), ", ".join(context))
             else:
                 return "%s(%r)" % ("fstr", str(self))
-
-
-sys.modules[__name__] = fstr

@@ -1,5 +1,7 @@
 import pytest
-import fstr
+from sys import version_info
+
+from fstr import fstr
 
 
 def test_basic():
@@ -225,19 +227,6 @@ _backlashes_in_string_part = [
     ("{2}\u0394", "2\u0394"),
     ("{2}\u0394{3}", "2\u03943"),
     ("\u0394{3}", "\u03943"),
-    ("\U00000394", "\u0394"),
-    (r"\U00000394", "\\U00000394"),
-    (r"\U00000394", "\\U00000394"),
-    ("{2}\U00000394", "2\u0394"),
-    ("{2}\U00000394{3}", "2\u03943"),
-    ("\U00000394{3}", "\u03943"),
-    ("\N{GREEK CAPITAL LETTER DELTA}", "\u0394"),
-    ("{2}\N{GREEK CAPITAL LETTER DELTA}", "2\u0394"),
-    ("{2}\N{GREEK CAPITAL LETTER DELTA}{3}", "2\u03943"),
-    ("\N{GREEK CAPITAL LETTER DELTA}{3}", "\u03943"),
-    ("2\N{GREEK CAPITAL LETTER DELTA}", "2\u0394"),
-    ("2\N{GREEK CAPITAL LETTER DELTA}3", "2\u03943"),
-    ("\N{GREEK CAPITAL LETTER DELTA}3", "\u03943"),
     ("\x20", " "),
     (r"\x20", "\\x20"),
     (r"\x20", "\\x20"),
@@ -250,6 +239,25 @@ _backlashes_in_string_part = [
     ("\\{6*7}", "\\42"),
     (r"\{6*7}", "\\42"),
 ]
+
+if version_info >= (3, 0):
+    _backlashes_in_string_part.extend(
+        [
+            ("\U00000394", "\u0394"),
+            (r"\U00000394", "\\U00000394"),
+            (r"\U00000394", "\\U00000394"),
+            ("{2}\U00000394", "2\u0394"),
+            ("{2}\U00000394{3}", "2\u03943"),
+            ("\U00000394{3}", "\u03943"),
+            ("\N{GREEK CAPITAL LETTER DELTA}", "\u0394"),
+            ("{2}\N{GREEK CAPITAL LETTER DELTA}", "2\u0394"),
+            ("{2}\N{GREEK CAPITAL LETTER DELTA}{3}", "2\u03943"),
+            ("\N{GREEK CAPITAL LETTER DELTA}{3}", "\u03943"),
+            ("2\N{GREEK CAPITAL LETTER DELTA}", "2\u0394"),
+            ("2\N{GREEK CAPITAL LETTER DELTA}3", "2\u03943"),
+            ("\N{GREEK CAPITAL LETTER DELTA}3", "\u03943"),
+        ]
+    )
 
 
 @pytest.mark.parametrize("template, expected", _backlashes_in_string_part)
@@ -338,7 +346,7 @@ _ok_lambdas = [
 
 @pytest.mark.parametrize("template, expected", _ok_lambdas)
 def test_lambda(template, expected):
-    assert fstr(template).format(x=5) == expected
+    assert fstr(template, x=5).format() == expected
 
 
 _triple_quoted_strings = [
@@ -410,11 +418,13 @@ def test_conversions():
     assert fstr("{3.14:10.10}").format() == "      3.14"
     assert fstr("{3.14!s:10.10}").format() == "3.14      "
     assert fstr("{3.14!r:10.10}").format() == "3.14      "
-    assert fstr("{3.14!a:10.10}").format() == "3.14      "
+    if version_info >= (3, 0):
+        assert fstr("{3.14!a:10.10}").format() == "3.14      "
 
     assert fstr('{"a"}').format() == "a"
     assert fstr('{"a"!r}').format() == "'a'"
-    assert fstr('{"a"!a}').format() == "'a'"
+    if version_info >= (3, 0):
+        assert fstr('{"a"!a}').format() == "'a'"
 
     # Not a conversion.
     assert fstr('{"a!r"}').format() == "a!r"
@@ -450,12 +460,14 @@ def test_invalid_expressions(invalid):
         fstr(invalid).format()
 
 
-_causes_errors = [
-    ("{(lambda: 0):x}", TypeError),
-    ("{(0,):x}", TypeError),
-    ("{1000:j}", SyntaxError),
-    ("{1000:j}", SyntaxError),
-]
+if version_info < (3, 0):
+    _causes_errors = [("{1000:j}", SyntaxError)]
+else:
+    _causes_errors = [
+        ("{(lambda: 0):x}", TypeError),
+        ("{(0,):x}", TypeError),
+        ("{1000:j}", ValueError),
+    ]
 
 
 @pytest.mark.parametrize("bad, etype", _causes_errors)
