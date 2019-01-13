@@ -16,11 +16,11 @@ matrix:
     - name: "black"
       python: 3.7
       env:
-        - TEST_CMD="pip install black && black --verbose ."
+        - TEST_CMD="pip install black & black --verbose ."
     - name: "flake8"
       python: 3.7
       env:
-        - TEST_CMD="pip install flake8 && flake8"
+        - TEST_CMD="pip install flake8 & flake8"
     - name: "python-2.7"
       python: 2.7
     - name: "python-3.5"
