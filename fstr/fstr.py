@@ -93,7 +93,9 @@ class fstr(str):
             index = len(outside[0])  # only used for syntax error info
             for inner, outer in zip(inside, outside[1:]):
                 expr, format_lang = split_format_language(inner, self)
-                template_parts[-1]
+                if "\\" in expr:
+                    msg = "Backslash not allowed in expression."
+                    raise_syntax_error(self, msg, index + 1)
                 if "{" in format_lang:
                     # there's an fstring inside the format language
                     template_fstrs.append(fstr(format_lang, **self.__context))
@@ -105,7 +107,7 @@ class fstr(str):
                     msg = "Empty expresion not allowed."
                     raise_syntax_error(self, msg, index + 1)
                 expressions.append(expr.strip().replace("\n", ""))
-                index += len(inner) + len(outer)
+                index += len(inner) + len(outer) + 2
 
             template_parts = [
                 "".join(template_parts[i : i + 2])
