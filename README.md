@@ -164,15 +164,15 @@ fstr_setup = "import fstr\ntemplate = fstr('{x}' * 10)"
 str_result = timeit("template.format(x=1)", setup=str_setup, number=1000000)
 fstr_result = timeit("template.format(x=1)", setup=fstr_setup, number=1000000)
 
-print("str.format() : %s seconds" % str_result)
+print("str.format()  : %s seconds" % str_result)
 print("fstr.format() : %s seconds" % fstr_result)
 ```
 
 ### Python < 3.6
 
 ```
-str.format() : 0.741672992706 seconds
-fstr.format() : 6.77992010117 seconds
+str.format()  : 0.67650 seconds
+fstr.format() : 1.38063 seconds
 ```
 
 ### Python >= 3.6
