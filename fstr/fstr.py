@@ -1,4 +1,3 @@
-import six
 import sys
 import inspect
 
@@ -94,7 +93,9 @@ class fstr(str):
             index = len(outside[0])  # only used for syntax error info
             for inner, outer in zip(inside, outside[1:]):
                 expr, format_lang = split_format_language(inner, self)
-                template_parts[-1]
+                if "\\" in expr:
+                    msg = "Backslash not allowed in expression."
+                    raise_syntax_error(self, msg, index + 1)
                 if "{" in format_lang:
                     # there's an fstring inside the format language
                     template_fstrs.append(fstr(format_lang, **self.__context))
@@ -106,7 +107,7 @@ class fstr(str):
                     msg = "Empty expresion not allowed."
                     raise_syntax_error(self, msg, index + 1)
                 expressions.append(expr.strip().replace("\n", ""))
-                index += len(inner) + len(outer)
+                index += len(inner) + len(outer) + 2
 
             template_parts = [
                 "".join(template_parts[i : i + 2])
@@ -115,8 +116,10 @@ class fstr(str):
 
             self.__template_parts = template_parts
             self.__template_fstrs = template_fstrs
-            self.__expressions = expressions
-            self.__code = [compile(e, "<fstr>", "eval") for e in expressions]
+            # form expressions into a tuple that can be evaluated once
+            tuple_expression_items = ["(\n   %s\n)," % e for e in expressions]
+            tuple_expression = "(\n%s\n)" % "\n".join(tuple_expression_items)
+            self.__code = compile(tuple_expression, "<fstr>", "eval")
 
         def format(self, **context):
             template = ""
@@ -126,15 +129,7 @@ class fstr(str):
                     template += tp + "{" + fs.format(**context) + "}"
             # if no template fstrs join parts otherwise append remaining parts.
             template += "".join(self.__template_parts[len(self.__template_fstrs) :])
-            values = []
-            for i, c in enumerate(self.__code):
-                try:
-                    result = eval(c, dict(self.__context, **context))
-                except Exception as e:
-                    msg = "Could not evaluate %r." % self.__expressions[i]
-                    raise six.raise_from(type(e)(msg), e)
-                else:
-                    values.append(result)
+            values = eval(self.__code, self.__context.copy(), context)
             try:
                 return template.format(*values)
             except ValueError as e:
