@@ -11,8 +11,7 @@ ipykernel = "*"
 
 [packages]
 fstr = {editable = true,path = "."}
-
-[requires]
+six = "*"
 
 [pipenv]
 allow_prereleases = true
